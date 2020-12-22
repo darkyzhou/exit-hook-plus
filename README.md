@@ -1,5 +1,7 @@
 # exit-hook-plus
 
+![](https://github.com/darkyzhou/exit-hook-plus/workflows/Node.js%20CI/badge.svg)
+
 Do something and then automatically call `process.exit` when these cases happen:
 
 - an `unhandledRejection` or `uncaughtException` event occurred
