@@ -1,0 +1,54 @@
+{
+  "name": "exit-hook-plus",
+  "version": "0.0.1",
+  "description": "Do something before the program exits",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "format": "prettier --write .",
+    "pretest": "npm run build",
+    "test": "mocha ./test/tests.js",
+    "prepare": "npm run build && npm run format",
+    "build": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/darkyzhou/exit-hook-plus.git"
+  },
+  "author": {
+    "name": "Qiyun Zhou",
+    "email": "darkyoooooo@gmail.com",
+    "url": "https://github.com/darkyzhou"
+  },
+  "keywords": [
+    "exit",
+    "hook",
+    "async",
+    "handler",
+    "sigterm",
+    "sigint",
+    "sighup",
+    "terminate",
+    "shutdown",
+    "kill",
+    "stop"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "/dist"
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/darkyzhou/exit-hook-plus/issues"
+  },
+  "homepage": "https://github.com/darkyzhou/exit-hook-plus#readme",
+  "devDependencies": {
+    "@types/node": "^14.14.14",
+    "assert": "^2.0.0",
+    "mocha": "^8.2.1",
+    "prettier": "^2.2.1",
+    "typescript": "^4.1.3"
+  }
+}
