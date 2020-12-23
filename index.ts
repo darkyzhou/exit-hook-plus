@@ -1,22 +1,35 @@
 export type ExitReason =
-  | {
-      category: 'trivial';
-      exitCode: number;
-    }
-  | {
-      category: 'exception';
-      errorOrReason: Error | any;
-    }
-  | {
-      category: 'signal';
-      signal: 'SIGHUP' | 'SIGINT' | 'SIGTERM' | 'SIGBREAK';
-    };
+  | ExitReasonTrivial
+  | ExitReasonException
+  | ExitReasonSignal
+  | ExitReasonManual;
+
+export type ExitReasonTrivial = {
+  category: 'trivial';
+  exitCode: number;
+};
+
+export type ExitReasonException = {
+  category: 'exception';
+  errorOrReason?: Error | any;
+};
+
+export type ExitReasonSignal = {
+  category: 'signal';
+  signal: 'SIGHUP' | 'SIGINT' | 'SIGTERM' | 'SIGBREAK';
+};
+
+export type ExitReasonManual = {
+  category: 'manual';
+  extra?: any;
+};
+
 export type ExitHook = { _executed?: boolean } & (
   | ((reason: ExitReason) => Promise<void>)
   | ((reason: ExitReason) => void)
 );
 
-const exitHooks: ExitHook[] = [];
+let exitHooks: ExitHook[] = [];
 const TRIGGER_ERRORS = ['unhandledRejection', 'uncaughtException'];
 const TRIGGER_SIGNALS = [
   ['SIGHUP', 128 + 1],
@@ -30,6 +43,14 @@ export function addExitHook(hook: ExitHook) {
     throw new Error(`invalid argument, expected function but got ${typeof hook}`);
   }
   exitHooks.push(hook);
+}
+
+export function removeExitHook(hook: ExitHook) {
+  exitHooks = exitHooks.filter((h) => h !== hook);
+}
+
+export function executeAllHooksAndTerminate(exitCode: number, extra: any) {
+  runHooks({ category: 'manual', extra }).finally(() => process.exit(exitCode));
 }
 
 process.on('beforeExit', async (code) => {

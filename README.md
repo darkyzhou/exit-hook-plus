@@ -22,6 +22,26 @@ $ npm install exit-hook-plus
 
 ## Usage
 
+### APIs
+
+```javascript
+// Add an exit hook function
+// The function can be either sync or async
+// When using async hooks, you should be aware that they will NOT be executed if you manually
+// call process.exit to termintate the program, see the "Warnings" below
+function addExitHook(hook: ExitHook) {}
+
+// Remove an existing hook function
+// Will do nothing if the given function does not exist
+function removeExitHook(hook: ExitHook) {}
+
+// Pass the 'extra' object to all the hooks and automatically call process.exit with 'exitCode'
+// Notice that by this way you are free from the async hook issue above
+// It is a sync function but under the hood it asynchronously executes the hooks and terminate the program
+// so you should treat it as the last action in your program and DO NOT run other codes after calling it
+function executeAllHooksAndTerminate(exitCode: number, extra: any) {}
+```
+
 ### Examples
 
 #### A `unhandledRejection` or `uncaughtException` event
@@ -90,6 +110,8 @@ process.exit(88);
 #### A real world example
 
 ```javascript
+const { addExitHook, executeAllHooksAndTerminate } = require('exit-hook-plus');
+
 // we initialize connections to kafka and mongodb
 // and add the exit hook for disconnect functions
 // it's a bit like the 'defer' keyword in golang :D
@@ -103,6 +125,13 @@ addExitHook(async () => await kafkaDataConsumer.disconnect());
 console.info('connecting to mongodb');
 await mongo.connect();
 addExitHook(async () => await mongo.close());
+
+if (liveStreamEnded) {
+  console.info('live stream ended, program will exit soon');
+  // now terminate the program
+  // here we should NOT use process.exit because it will make async hooks unable to execute, see the "Warnings" below
+  executeAllHooksAndTerminate(0, {});
+}
 ```
 
 ### Warnings

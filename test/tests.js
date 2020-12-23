@@ -61,10 +61,27 @@ describe('uncaughtException test case', () => {
 });
 
 describe('sigint test case', () => {
-  it('should print correct reason', async () => {
+  it('should print correct reason once', async () => {
     const [code, output] = await forkTestFile('sigint', 'SIGINT');
     assert.deepStrictEqual(code, 130);
     assert.deepStrictEqual(output[0], 'signal');
     assert.deepStrictEqual(output[1], 'SIGINT');
+  });
+});
+
+describe('execute all hooks and terminate with code 99', () => {
+  it('should print correct reason once', async () => {
+    const [code, output] = await forkTestFile('manual');
+    assert.deepStrictEqual(code, 99);
+    assert.deepStrictEqual(output[0], 'manual');
+    assert.deepStrictEqual(output[1], 'test data');
+  });
+});
+
+describe('remove existing hook', () => {
+  it('should remove the right hook and give correct output', async () => {
+    const [code, output] = await forkTestFile('remove-hook');
+    assert.deepStrictEqual(code, 0);
+    assert.deepStrictEqual(output, 2);
   });
 });
