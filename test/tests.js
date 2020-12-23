@@ -2,7 +2,7 @@ const assert = require('assert');
 const path = require('path');
 const { fork } = require('child_process');
 
-function forkTestFile(fileName) {
+function forkTestFile(fileName, signal) {
   return new Promise((resolve) => {
     const proc = fork(path.resolve(__dirname, 'cases', `${fileName}.js`), {
       env: process.env,
@@ -13,6 +13,11 @@ function forkTestFile(fileName) {
     proc.stdout.on('data', (data) => (output += data.toString()));
     proc.stderr.on('data', (data) => (output += data.toString()));
     proc.on('exit', (code) => resolve([code, JSON.parse(output)]));
+
+    if (signal) {
+      // https://github.com/nodejs/node/issues/22761
+      setTimeout(() => proc.kill(signal), 500);
+    }
   });
 }
 
@@ -26,13 +31,13 @@ describe('trivial exit test case', () => {
     });
   });
 
-  describe('with process.exit(1) called', () => {
+  describe('with process.exit(99) called', () => {
     it('should print the only one correct reason', async () => {
       const [code, output] = await forkTestFile('trivial-exit-with-process-exit');
-      assert.deepStrictEqual(code, 1);
+      assert.deepStrictEqual(code, 99);
       assert.deepStrictEqual(output[0], 1);
       assert.deepStrictEqual(output[1], 'trivial');
-      assert.deepStrictEqual(output[2], 1);
+      assert.deepStrictEqual(output[2], 99);
     });
   });
 });
@@ -52,5 +57,14 @@ describe('uncaughtException test case', () => {
     assert.deepStrictEqual(code, 1);
     assert.deepStrictEqual(output[0], 'exception');
     assert.deepStrictEqual(output[1], 'test error');
+  });
+});
+
+describe('sigint test case', () => {
+  it('should print correct reason', async () => {
+    const [code, output] = await forkTestFile('sigint', 'SIGINT');
+    assert.deepStrictEqual(code, 130);
+    assert.deepStrictEqual(output[0], 'signal');
+    assert.deepStrictEqual(output[1], 'SIGINT');
   });
 });

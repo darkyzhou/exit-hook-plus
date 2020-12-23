@@ -8,4 +8,4 @@ addExitHook((reason) => {
   console.log(JSON.stringify([1, reason.category, reason.exitCode]));
 });
 
-process.exit(1);
+process.exit(99);
