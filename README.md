@@ -39,7 +39,7 @@ addExitHook(async (reason) => {
 });
 
 (function () {
-  // trigger an  event
+  // trigger an unhandledRejection event
   return Promise.reject(new Error('test error'));
 })();
 ```
@@ -123,7 +123,6 @@ On windows `process.kill(signal)` immediately kills the process, and does not fi
 
 The correct use of hooking them is mainly to perform cleanup of allocated resources (e.g. file descriptors, connections, etc) before shutting down the process.
 It is not safe to resume normal operation after these events happened. For details, please refer to https://nodejs.org/api/process.html#process_warning_using_uncaughtexception_correctly.
-
 
 ## Compatibility
 
