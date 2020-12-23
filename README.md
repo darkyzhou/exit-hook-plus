@@ -24,7 +24,9 @@ $ npm install exit-hook-plus
 
 ### Examples
 
-#### A `unhandledRejection` or `uncaughtException` event (exit code: `1`)
+#### A `unhandledRejection` or `uncaughtException` event
+
+In this case, `exit-hook-plus` will **automatically terminate the program with exit code 1** after executing all the exit hook functions.
 
 ```javascript
 const { addExitHook } = require('exit-hook-plus');
@@ -46,7 +48,7 @@ addExitHook(async (reason) => {
 
 #### A `SIGHUP`, `SIGINT`, `SIGTERM` or `SIGBREAK` signal
 
-the exit codes follow UNIX's convention:
+In this case, `exit-hook-plus` will terminate the program with following exit code after executing all the exit hook functions:
 
 - `SIGUP`: 128+1 = 129
 - `SIGINT`: 128+2 = 130
