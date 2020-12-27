@@ -26,12 +26,15 @@ $ npm install exit-hook-plus
 
 ```typescript
 // Remove the default exit logger for exit reasons with category 'exception' and 'signal'.
+//
 // For category 'exception' reasons, the logger will print 'the program is now exiting due to unhandled exception: (reason.errorOrReason or its stack when it's an error)'.
 // For category 'signal' reasons, the logger will print 'the program is now exiting due to receiving signal: (signal name)'.
 function disableDefaultExitLogger() {}
 
 // Add an exit hook function.
+//
 // The function can be either sync or async.
+//
 // When using async hooks, you should be aware that they will NOT be executed if you manually
 // call process.exit to termintate the program, see the "Warnings" below.
 function addExitHook(hook: ExitHook) {}
@@ -41,9 +44,11 @@ function addExitHook(hook: ExitHook) {}
 function removeExitHook(hook: ExitHook) {}
 
 // Pass the 'extra' object to all the hooks and automatically call process.exit with 'exitCode'.
+//
 // Notice that by this way you are free from the async hook issue above.
 // It is a sync function but under the hood it asynchronously executes the hooks and terminate the program
 // so you should treat it as the last action in your program and DO NOT run other codes after calling it.
+//
 // If you call it without any arguments, the exitCode will default to 0 and extra to undefined.
 function executeAllHooksAndTerminate(exitCode: number = 0, extra?: any) {}
 ```
