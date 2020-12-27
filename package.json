@@ -1,6 +1,6 @@
 {
   "name": "exit-hook-plus",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Do something before the program exits or when the program crashes!",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

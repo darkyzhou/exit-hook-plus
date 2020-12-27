@@ -2,7 +2,7 @@ const assert = require('assert');
 const path = require('path');
 const { fork } = require('child_process');
 
-function forkTestFile(fileName, signal) {
+function forkTestFile(fileName, jsonOutput = true, signal = null) {
   return new Promise((resolve) => {
     const proc = fork(path.resolve(__dirname, 'cases', `${fileName}.js`), {
       env: process.env,
@@ -12,7 +12,7 @@ function forkTestFile(fileName, signal) {
     let output = '';
     proc.stdout.on('data', (data) => (output += data.toString()));
     proc.stderr.on('data', (data) => (output += data.toString()));
-    proc.on('exit', (code) => resolve([code, JSON.parse(output)]));
+    proc.on('exit', (code) => resolve([code, jsonOutput ? JSON.parse(output) : output]));
 
     if (signal) {
       // https://github.com/nodejs/node/issues/22761
@@ -62,14 +62,14 @@ describe('uncaughtException test case', () => {
 
 describe('sigint test case', () => {
   it('should print correct reason once', async () => {
-    const [code, output] = await forkTestFile('sigint', 'SIGINT');
+    const [code, output] = await forkTestFile('sigint', true, 'SIGINT');
     assert.deepStrictEqual(code, 130);
     assert.deepStrictEqual(output[0], 'signal');
     assert.deepStrictEqual(output[1], 'SIGINT');
   });
 });
 
-describe('execute all hooks and terminate with code 99', () => {
+describe(`executeAllHooksAndTerminate(99, 'test data') test case`, () => {
   it('should print correct reason once', async () => {
     const [code, output] = await forkTestFile('manual');
     assert.deepStrictEqual(code, 99);
@@ -78,10 +78,33 @@ describe('execute all hooks and terminate with code 99', () => {
   });
 });
 
-describe('remove existing hook', () => {
+describe('remove existing hook test case', () => {
   it('should remove the right hook and give correct output', async () => {
     const [code, output] = await forkTestFile('remove-hook');
     assert.deepStrictEqual(code, 0);
     assert.deepStrictEqual(output, 2);
+  });
+});
+
+describe('default exit logger test case', () => {
+  describe('unhandled exception occurred', () => {
+    it('should print correct log', async () => {
+      const [code, output] = await forkTestFile('default-exit-logger-exception', false);
+      assert.deepStrictEqual(code, 1);
+      assert.deepStrictEqual(
+        output.trim(),
+        'the program is now exiting due to unhandled exception: test error'
+      );
+    });
+  });
+  describe('received SIGTERM signal', () => {
+    it('should print correct log', async () => {
+      const [code, output] = await forkTestFile('default-exit-logger-sigterm', false, 'SIGTERM');
+      assert.deepStrictEqual(code, 143);
+      assert.deepStrictEqual(
+        output.trim(),
+        'the program is now exiting due to receiving signal: SIGTERM'
+      );
+    });
   });
 });

@@ -29,7 +29,6 @@ export type ExitHook = { _executed?: boolean } & (
   | ((reason: ExitReason) => void)
 );
 
-let exitHooks: ExitHook[] = [];
 const TRIGGER_ERRORS = ['unhandledRejection', 'uncaughtException'];
 const TRIGGER_SIGNALS = [
   ['SIGHUP', 128 + 1],
@@ -37,6 +36,26 @@ const TRIGGER_SIGNALS = [
   ['SIGTERM', 128 + 15],
   ['SIGBREAK', 128 + 21]
 ] as const;
+
+const defaultExitLogger: ExitHook = (reason) => {
+  switch (reason.category) {
+    case 'exception':
+      const stack = reason.errorOrReason.stack;
+      console.error(
+        `the program is now exiting due to unhandled exception: ${stack ?? reason.errorOrReason}`
+      );
+      break;
+    case 'signal':
+      console.error(`the program is now exiting due to receiving signal: ${reason.signal}`);
+      break;
+  }
+};
+
+let exitHooks: ExitHook[] = [defaultExitLogger];
+
+export function disableDefaultExitLogger() {
+  removeExitHook(defaultExitLogger);
+}
 
 export function addExitHook(hook: ExitHook) {
   if (typeof hook !== 'function') {
@@ -49,7 +68,7 @@ export function removeExitHook(hook: ExitHook) {
   exitHooks = exitHooks.filter((h) => h !== hook);
 }
 
-export function executeAllHooksAndTerminate(exitCode: number, extra: any) {
+export function executeAllHooksAndTerminate(exitCode: number = 0, extra?: any) {
   runHooks({ category: 'manual', extra }).finally(() => process.exit(exitCode));
 }
 
